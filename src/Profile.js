@@ -3,7 +3,7 @@ import './Profile.css';
 import Anonymous from './img/anonymous.png';
 
 const Profile = isAnonymous => {
-    console.log(isAnonymous);
+    
     if(isAnonymous){
         return(
             <div className="anonymous">

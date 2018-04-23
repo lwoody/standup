@@ -3,17 +3,39 @@ import logo from './logo.svg';
 import './App.css';
 import Editor from './Editor';
 import config from './config';
-
-console.log(config.apiKey);
+import FirebaseDao from './FirebaseDao';
 
 class App extends React.Component {
   constructor() {
     super();
-    this.handleSubmit = this.handleSubmit.bind(this);
+    this.dao = new FirebaseDao(config);
+    this.submit = this.submit.bind(this);
+    this.state = {
+      articles: []
+    }
   }
 
-  handleSubmit(e) {
-    console.log(this, e);
+  componentDidMount = () => {
+    this.dao.list(25).on('value', snapShotList => {
+      var items = [];
+      snapShotList.forEach((snapshot) => {
+        items.push(snapshot.val());
+      });
+      if (items && items.length > 0) {
+        console.log(items);
+        this.setState({
+          articles: items.reverse(),
+        })
+      }
+    })
+  }
+
+  submit(article) {
+    if (article) {
+      let key = this.dao.newKey();
+      let updated = this.dao.update(key, article);
+      return updated;
+    }
   }
 
   isAnonymous() {
@@ -31,7 +53,14 @@ class App extends React.Component {
           react로 스탠드업 페이지 개발
         </p>
         <Editor isAnonymous={this.isAnonymous}
-                handleSubmit={this.handleSubmit} />
+          submit={this.submit} />
+        <ul>
+          {this.state.articles.map((article) =>
+            <li key={article.key}>
+              {article.content}
+            </li>
+          )}
+        </ul>
       </div>
     );
   }
